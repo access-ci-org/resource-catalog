@@ -1,0 +1,51 @@
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getResources, selecthasErrors, selectResourcesLoaded } from "../state/catalogSlice";
+import ResourceList from "./ResourceList";
+import Filters from "./Filters";
+const ResourceCatalog = ({ api_url }) => {
+  const dispatch = useDispatch();
+  const resourcesLoaded = useSelector( selectResourcesLoaded );
+  const hasErrors = useSelector( selecthasErrors )
+
+  useEffect(() => {
+    dispatch( getResources(api_url) );
+  }, [])
+
+  if(hasErrors){
+    return (
+      <div className="row">
+        <div className="col text-center mt-2">
+          <h4>Unable to Load Resources</h4>
+        </div>
+      </div>
+    )
+  }
+
+  if(!resourcesLoaded){
+    return(
+      <div className="row">
+        <div className="col" style={{ textAlign: "center" }}>
+          <h2 className="mt-5">
+            Loading... <i className="fa fa-circle-notch fa-spin fa-2xl"></i>
+          </h2>
+        </div>
+      </div>
+    )
+  }
+
+  return(
+    <>
+    <div className="row mt-3">
+      <div className="col-sm-4">
+        <Filters />
+      </div>
+      <div className="col-sm-8">
+        <ResourceList />
+      </div>
+    </div>
+    </>
+  )
+}
+
+export default ResourceCatalog;
