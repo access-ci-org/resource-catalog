@@ -3,13 +3,24 @@ import { useDispatch, useSelector } from "react-redux";
 import { getResources, selecthasErrors, selectResourcesLoaded } from "../state/catalogSlice";
 import ResourceList from "./ResourceList";
 import Filters from "./Filters";
-const ResourceCatalog = ({ api_url }) => {
+const ResourceCatalog = ({ api_url, excluded_categories, excluded_filters, allowed_categories, allowed_filters }) => {
   const dispatch = useDispatch();
   const resourcesLoaded = useSelector( selectResourcesLoaded );
   const hasErrors = useSelector( selecthasErrors )
 
   useEffect(() => {
-    dispatch( getResources(api_url) );
+    const excludedCategories = excluded_categories ? excluded_categories : [];
+    const excludedFilters = excluded_filters ? excluded_filters : [];
+    const allowedCategories = allowed_categories ? allowed_categories : [];
+    const allowedFilters = allowed_filters ? allowed_filters : [];
+
+    dispatch( getResources({
+      api_url,
+      excludedCategories,
+      excludedFilters,
+      allowedCategories,
+      allowedFilters
+    }) );
   }, [])
 
   if(hasErrors){

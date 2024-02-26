@@ -1,6 +1,6 @@
 {
   "name": "@xras/resource-catalog",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "A browser for available Resources",
   "type": "module",
   "files": [

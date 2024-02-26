@@ -11,10 +11,10 @@ const initialState = {
 
 export const getResources = createAsyncThunk(
   'resourceCatalog/getResources',
-  async (url, { dispatch }) => {
-    const response = await fetch(url);
+  async (params, { dispatch }) => {
+    const response = await fetch(params.api_url);
     const data = await response.json();
-    dispatch(handleResponse(data));
+    dispatch(handleResponse( {data, params}));
   }
 );
 
@@ -30,12 +30,31 @@ const activeFilters = (filters) => {
   return selected;
 }
 
+const useFilter = (allowed, excluded, item) => {
+  if(allowed.length == 0 && excluded.length == 0) return true;
+
+  // If users specified both allow and exclude lists
+  // just use the allow list. Otherwise there's unresolvable conflicts.
+
+  if(allowed.length > 0) {
+    return allowed.find((el) => el == item)
+  } else if(excluded.length > 0) {
+    return !excluded.find((el) => el == item)
+  }
+}
+
 export const catalogSlice = createSlice({
   name: 'resourceCatalog',
   initialState,
   reducers: {
     handleResponse: (state, { payload }) => {
-      const apiResources = payload;
+      const apiResources = payload.data;
+      console.log(payload.params);
+      const excludedCategories = payload.params.excludedCategories;
+      const excludedFilters = payload.params.excludedFilters;
+      const allowedCategories = payload.params.allowedCategories;
+      const allowedFilters = payload.params.allowedFilters;
+
       const resources = [];
       const features = [];
       const categories = {};
@@ -45,7 +64,7 @@ export const catalogSlice = createSlice({
         r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
           const categoryId = category.categoryId;
 
-          if(!categories[categoryId]){
+          if(!categories[categoryId] && useFilter(allowedCategories, excludedCategories, category.categoryName) ){
             categories[categoryId] = {
               categoryId: categoryId,
               categoryName: category.categoryName,
@@ -63,9 +82,10 @@ export const catalogSlice = createSlice({
               selected: false
             };
 
-            feature_list.push(feature);
+            const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
+            if(filterIncluded) feature_list.push(feature);
 
-            if(!categories[categoryId].features[feat.featureId]) {
+            if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
               categories[categoryId].features[feat.featureId] = feature;
             }
           })
