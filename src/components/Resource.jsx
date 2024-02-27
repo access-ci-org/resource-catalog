@@ -1,5 +1,6 @@
 import React from "react";
 import Accordion from "react-bootstrap/Accordion";
+import parse from 'html-react-parser'
 const Resource = ({ resource }) => {
 
   const renderFeatures = (features) => {
@@ -27,7 +28,7 @@ const Resource = ({ resource }) => {
           </div>
           <div className="row mb-3">
             <div className="col">
-              { content  }
+              { parse(content)  }
             </div>
           </div>
         </>
