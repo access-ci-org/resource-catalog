@@ -9,11 +9,11 @@
     <div id="resource_catalog_app"></div>
 
     <script type="module">
-      // import { renderCatalog } from "https://esm.sh/@xras/resource-catalog@0.2.1";
+      // import { renderCatalog } from "https://esm.sh/@xras/resource-catalog";
       import { renderCatalog } from "/src/index.jsx";
       renderCatalog({
-        api_url: "http://localhost:3009/resources.json",
-        allowed_categories: ["Resource Type"]
+        api_url: "https://allocations.access-ci.org/resources.json",
+        // allowed_categories: ["Resource Type"]
       });
     </script>
   </body>

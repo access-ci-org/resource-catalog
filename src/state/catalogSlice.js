@@ -20,6 +20,8 @@ export const getResources = createAsyncThunk(
 
 const activeFilters = (filters) => {
   const selected = [];
+  const categories = filters.filter((f) => f.features.filter((feat) => feat.selected).length > 0);
+
   filters
     .forEach((c) => {
       c.features.forEach((f) => {
@@ -27,7 +29,12 @@ const activeFilters = (filters) => {
       })
     })
 
-  return selected;
+  return categories.map((c) => {
+    return {
+      ...c,
+      features: c.features.filter((feat) => feat.selected)
+    }
+  });
 }
 
 const useFilter = (allowed, excluded, item) => {
@@ -49,7 +56,6 @@ export const catalogSlice = createSlice({
   reducers: {
     handleResponse: (state, { payload }) => {
       const apiResources = payload.data;
-      console.log(payload.params);
       const excludedCategories = payload.params.excludedCategories;
       const excludedFilters = payload.params.excludedFilters;
       const allowedCategories = payload.params.allowedCategories;
@@ -150,10 +156,37 @@ export const catalogSlice = createSlice({
 
       if(active.length > 0){
         const selected = [];
-        state.resources.forEach((r) => {
-          const found = r.featureIds.filter((id) => active.indexOf(id) >= 0)
-          if(found.length == active.length) selected.push(r);
-        })
+        if(state.filters.length == 1){
+          // If there's only one category, the features should use an AND join
+          state.resources.forEach((r) => {
+            const features = active.map((c) => c.features.map((f) => f.featureId)).flat();
+            const found = r.featureIds.filter((id) => features.indexOf(id) >= 0)
+            if(found.length == features.length) selected.push(r);
+          })
+        } else {
+          // If there's more than one category,
+          // the features should use an OR within the same category
+          // different categories should be joined with AND
+
+          const sets = active.map((c) => c.features.map((f) => f.featureId))
+
+          state.resources.forEach((r) => {
+            let checksPassed = 0;
+            sets.forEach((set) => {
+              let passed = false;
+              r.featureIds.forEach((id) => {
+                if(set.indexOf(id) >= 0) passed = true;
+              });
+              if(passed) checksPassed += 1;
+
+            })
+            if(checksPassed >= sets.length){
+              selected.push(r);
+            }
+          })
+
+        }
+
         state.filteredResources = selected;
       } else {
         state.filteredResources = _.cloneDeep(state.resources);
