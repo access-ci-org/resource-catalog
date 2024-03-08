@@ -128,8 +128,8 @@ export const catalogSlice = createSlice({
         });
       }
 
-      state.filters = state.filters.sort((a,b) => a.categoryName > b.categoryName);
-      state.resources = resources.sort((a,b) => a.resourceName > b.resourceName);
+      state.filters = state.filters.sort((a,b) => a.categoryName.localeCompare(b.categoryName));
+      state.resources = resources.sort((a,b) => a.resourceName.localeCompare(b.resourceName));
       state.filteredResources = _.cloneDeep(state.resources);
       state.resourcesLoaded = true;
 
