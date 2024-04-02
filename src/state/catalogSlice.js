@@ -156,36 +156,22 @@ export const catalogSlice = createSlice({
 
       if(active.length > 0){
         const selected = [];
-        if(state.filters.length == 1){
-          // If there's only one category, the features should use an AND join
-          state.resources.forEach((r) => {
-            const features = active.map((c) => c.features.map((f) => f.featureId)).flat();
-            const found = r.featureIds.filter((id) => features.indexOf(id) >= 0)
-            if(found.length == features.length) selected.push(r);
+        const sets = active.map((c) => c.features.map((f) => f.featureId))
+
+        state.resources.forEach((r) => {
+          let checksPassed = 0;
+          sets.forEach((set) => {
+            let passed = false;
+            r.featureIds.forEach((id) => {
+              if(set.indexOf(id) >= 0) passed = true;
+            });
+            if(passed) checksPassed += 1;
+
           })
-        } else {
-          // If there's more than one category,
-          // the features should use an OR within the same category
-          // different categories should be joined with AND
-
-          const sets = active.map((c) => c.features.map((f) => f.featureId))
-
-          state.resources.forEach((r) => {
-            let checksPassed = 0;
-            sets.forEach((set) => {
-              let passed = false;
-              r.featureIds.forEach((id) => {
-                if(set.indexOf(id) >= 0) passed = true;
-              });
-              if(passed) checksPassed += 1;
-
-            })
-            if(checksPassed >= sets.length){
-              selected.push(r);
-            }
-          })
-
-        }
+          if(checksPassed >= sets.length){
+            selected.push(r);
+          }
+        })
 
         state.filteredResources = selected;
       } else {
