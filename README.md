@@ -7,7 +7,7 @@ This app provides a user interface to browse available Resources and their featu
 ```html
 <div id="resource_catalog_app"></div>
 <script type="module">
-  import { renderCatalog } from "https://esm.sh/@xras/resource-catalog@0.1.0";
+  import { renderCatalog } from "https://esm.sh/@xras/resource-catalog";
 
   renderCatalog({
     api_url: "/path/to/catalog.json",
