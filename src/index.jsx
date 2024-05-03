@@ -15,12 +15,19 @@ const renderCatalog = ({
     disable_bootstrap
   }) => {
   const container = document.getElementById("resource_catalog_app");
-  const root = ReactDOM.createRoot(container);
+  let root;
+  if (disable_bootstrap) {
+    root = ReactDOM.createRoot(container);
+  } else {
+    const shadow = container.attachShadow({ mode: "open" });
+    root = ReactDOM.createRoot(shadow);
+  }
+
   const bootstrapDisabled = disable_bootstrap ? disable_bootstrap : false;
 
   root.render(
     <Provider store={store}>
-      <div className='container' id='resource_catalog_app'>
+      <div className='container'>
         <ResourceCatalog
           api_url={api_url}
           excluded_categories={excluded_categories}
