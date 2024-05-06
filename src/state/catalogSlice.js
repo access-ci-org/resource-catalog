@@ -58,6 +58,7 @@ export const catalogSlice = createSlice({
       const apiResources = payload.data;
       const excludedCategories = payload.params.excludedCategories;
       const excludedFilters = payload.params.excludedFilters;
+      const excludedResources = payload.params.excludedResources;
       const allowedCategories = payload.params.allowedCategories;
       const allowedFilters = payload.params.allowedFilters;
 
@@ -97,21 +98,23 @@ export const catalogSlice = createSlice({
           })
         })
 
-        const resource = {
-          resourceName: r.resourceName,
-          resourceId: r.resourceId,
-          resourceType: r.resourceType,
-          organization: r.organization,
-          units: r.units,
-          userGuideUrl: r.userGuideUrl,
-          resourceDescription: r.resourceDescription,
-          description: r.description,
-          recommendedUse: r.recommendedUse,
-          features: feature_list.map(f => f.name).sort((a,b) => a > b),
-          featureIds: feature_list.map(f => f.featureId)
+        if(!excludedResources.find((er) => er == r.resourceName)){
+          const resource = {
+            resourceName: r.resourceName,
+            resourceId: r.resourceId,
+            resourceType: r.resourceType,
+            organization: r.organization,
+            units: r.units,
+            userGuideUrl: r.userGuideUrl,
+            resourceDescription: r.resourceDescription,
+            description: r.description,
+            recommendedUse: r.recommendedUse,
+            features: feature_list.map(f => f.name).sort((a,b) => a > b),
+            featureIds: feature_list.map(f => f.featureId)
+          }
+          resources.push(resource);
         }
 
-        resources.push(resource);
       })
 
       for(const categoryId in categories){

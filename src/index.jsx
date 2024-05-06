@@ -10,6 +10,7 @@ const renderCatalog = ({
     api_url,
     excluded_categories,
     excluded_filters,
+    excluded_resources,
     allowed_categories,
     allowed_filters,
     disable_bootstrap
@@ -32,6 +33,7 @@ const renderCatalog = ({
           api_url={api_url}
           excluded_categories={excluded_categories}
           excluded_filters={excluded_filters}
+          excluded_resources={excluded_resources}
           allowed_categories={allowed_categories}
           allowed_filters={allowed_filters}
         />
