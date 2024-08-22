@@ -56,17 +56,29 @@ export const catalogSlice = createSlice({
   reducers: {
     handleResponse: (state, { payload }) => {
       const apiResources = payload.data;
-      const excludedCategories = payload.params.excludedCategories;
-      const excludedFilters = payload.params.excludedFilters;
-      const excludedResources = payload.params.excludedResources;
-      const allowedCategories = payload.params.allowedCategories;
-      const allowedFilters = payload.params.allowedFilters;
+      const {
+        excludedCategories,
+        excludedFilters,
+        excludedResources,
+        allowedCategories,
+        allowedFilters,
+        allowedFeatures,
+        excludedFeatures
+
+      } = payload.params
 
       const resources = [];
       const features = [];
       const categories = {};
+      if(excludedFeatures.length > 0){
+        excludedFeatures.forEach((excluded) => {
+          excluded.features.forEach(f => excludedFilters.push(f))
+        })
+      }
+
       apiResources.forEach((r) => {
         const feature_list = [];
+        let addResource = true;
 
         r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
           const categoryId = category.categoryId;
@@ -80,25 +92,57 @@ export const catalogSlice = createSlice({
             }
           }
 
-          category.features.forEach((feat) => {
-            const feature = {
-              featureId: feat.featureId,
-              name: feat.name,
-              description: feat.description,
-              categoryId: categoryId,
-              selected: false
-            };
+          if(allowedFeatures.length > 0){
 
-            const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
-            if(filterIncluded) feature_list.push(feature);
+            allowedFeatures.forEach((f) => {
+              if(f.category == category.categoryName){
+                const featureNames = category.features
+                  .map((feat) => feat.name)
+                  .filter((name) => f.features.indexOf(name) >= 0);
 
-            if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
-              categories[categoryId].features[feat.featureId] = feature;
-            }
-          })
+                if(featureNames.length == 0){
+                  addResource = false;
+                }
+              }
+            })
+          }
+
+          if(excludedFeatures.length > 0){
+
+            excludedFeatures.forEach((f) => {
+              if(f.category == category.categoryName){
+
+                const featureNames = category.features
+                  .map((feat) => feat.name)
+                  .filter((name) => f.features.indexOf(name) < 0);
+
+                if(featureNames.length == 0){
+                  addResource = false;
+                }
+              }
+            })
+          }
+
+          if(addResource){
+            category.features.forEach((feat) => {
+              const feature = {
+                featureId: feat.featureId,
+                name: feat.name,
+                description: feat.description,
+                categoryId: categoryId,
+                selected: false
+              };
+              const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
+              if(filterIncluded) feature_list.push(feature);
+
+              if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
+                categories[categoryId].features[feat.featureId] = feature;
+              }
+            })
+          }
         })
 
-        if(!excludedResources.find((er) => er == r.resourceName)){
+        if(!excludedResources.find((er) => er == r.resourceName) && addResource){
           const resource = {
             resourceName: r.resourceName,
             resourceId: r.resourceId,
@@ -130,6 +174,14 @@ export const catalogSlice = createSlice({
           features: features.sort((a,b) => a.name > b.name)
         });
       }
+
+      const resourceFeatures = resources.map(r => r.features).flat();
+
+      state.filters = state.filters.map((f) => {
+        const features = f.features
+          .filter((feat) => resourceFeatures.indexOf(feat.name) >= 0);
+        return {...f, features: features};
+      })
 
       state.filters = state.filters.sort((a,b) => a.categoryName.localeCompare(b.categoryName));
       state.resources = resources.sort((a,b) => a.resourceName.localeCompare(b.resourceName));

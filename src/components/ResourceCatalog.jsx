@@ -4,7 +4,14 @@ import { getResources, selecthasErrors, selectResourcesLoaded } from "../state/c
 import ResourceList from "./ResourceList";
 import Filters from "./Filters";
 const ResourceCatalog = ({
-  api_url, excluded_categories, excluded_filters, excluded_resources, allowed_categories, allowed_filters
+  api_url,
+  excluded_categories,
+  excluded_filters,
+  excluded_resources,
+  allowed_categories,
+  allowed_filters,
+  allowed_features,
+  excluded_features
 }) => {
   const dispatch = useDispatch();
   const resourcesLoaded = useSelector( selectResourcesLoaded );
@@ -16,6 +23,8 @@ const ResourceCatalog = ({
     const excludedResources = excluded_resources ? excluded_resources : [];
     const allowedCategories = allowed_categories ? allowed_categories : [];
     const allowedFilters = allowed_filters ? allowed_filters : [];
+    const allowedFeatures = allowed_features ? allowed_features : [];
+    const excludedFeatures = excluded_features ? excluded_features : [];
 
     dispatch( getResources({
       api_url,
@@ -23,7 +32,9 @@ const ResourceCatalog = ({
       excludedFilters,
       allowedCategories,
       allowedFilters,
-      excludedResources
+      excludedResources,
+      allowedFeatures,
+      excludedFeatures
     }) );
   }, [])
 

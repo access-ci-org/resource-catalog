@@ -13,7 +13,9 @@ const renderCatalog = ({
     excluded_resources,
     allowed_categories,
     allowed_filters,
-    disable_bootstrap
+    disable_bootstrap,
+    allowed_features,
+    excluded_features
   }) => {
   const container = document.getElementById("resource_catalog_app");
   let root;
@@ -36,6 +38,8 @@ const renderCatalog = ({
           excluded_resources={excluded_resources}
           allowed_categories={allowed_categories}
           allowed_filters={allowed_filters}
+          excluded_features={excluded_features}
+          allowed_features={allowed_features}
         />
       </div>
       {bootstrapDisabled ? '' : <style>{bootstrapStyles}</style>}
