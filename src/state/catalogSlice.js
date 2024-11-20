@@ -6,7 +6,14 @@ const initialState = {
   resources: [],
   filteredResources: [],
   resourcesLoaded: false,
-  hasErrors: false
+  hasErrors: false,
+  resourceSorting: {
+    "NSF Capacity Resources": 1,
+    "NSF Innovative Testbeds": 2,
+    "Other NSF-funded Resources": 3,
+    "Services and Support": 4,
+    "unknown": 5
+  }
 }
 
 export const getResources = createAsyncThunk(
@@ -79,67 +86,74 @@ export const catalogSlice = createSlice({
       apiResources.forEach((r) => {
         const feature_list = [];
         let addResource = true;
+        let sortCategory = "unknown";
 
         r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
           const categoryId = category.categoryId;
 
-          if(!categories[categoryId] && useFilter(allowedCategories, excludedCategories, category.categoryName) ){
-            categories[categoryId] = {
-              categoryId: categoryId,
-              categoryName: category.categoryName,
-              categoryDescription: category.categoryDescription,
-              features: {}
+          if(category.categoryName == "ACCESS Resource Grouping"){
+            sortCategory = category.features[0].name;
+          } else {
+            if(!categories[categoryId] && useFilter(allowedCategories, excludedCategories, category.categoryName) ){
+              categories[categoryId] = {
+                categoryId: categoryId,
+                categoryName: category.categoryName,
+                categoryDescription: category.categoryDescription,
+                features: {}
+              }
+            }
+
+            if(allowedFeatures.length > 0){
+
+              allowedFeatures.forEach((f) => {
+                if(f.category == category.categoryName){
+                  const featureNames = category.features
+                    .map((feat) => feat.name)
+                    .filter((name) => f.features.indexOf(name) >= 0);
+
+                  if(featureNames.length == 0){
+                    addResource = false;
+                  }
+                }
+              })
+            }
+
+            if(excludedFeatures.length > 0){
+
+              excludedFeatures.forEach((f) => {
+                if(f.category == category.categoryName){
+
+                  const featureNames = category.features
+                    .map((feat) => feat.name)
+                    .filter((name) => f.features.indexOf(name) < 0);
+
+                  if(featureNames.length == 0){
+                    addResource = false;
+                  }
+                }
+              })
+            }
+
+            if(addResource){
+              category.features.forEach((feat) => {
+                const feature = {
+                  featureId: feat.featureId,
+                  name: feat.name,
+                  description: feat.description,
+                  categoryId: categoryId,
+                  selected: false
+                };
+                const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
+                if(filterIncluded) feature_list.push(feature);
+
+                if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
+                  categories[categoryId].features[feat.featureId] = feature;
+                }
+              })
             }
           }
 
-          if(allowedFeatures.length > 0){
 
-            allowedFeatures.forEach((f) => {
-              if(f.category == category.categoryName){
-                const featureNames = category.features
-                  .map((feat) => feat.name)
-                  .filter((name) => f.features.indexOf(name) >= 0);
-
-                if(featureNames.length == 0){
-                  addResource = false;
-                }
-              }
-            })
-          }
-
-          if(excludedFeatures.length > 0){
-
-            excludedFeatures.forEach((f) => {
-              if(f.category == category.categoryName){
-
-                const featureNames = category.features
-                  .map((feat) => feat.name)
-                  .filter((name) => f.features.indexOf(name) < 0);
-
-                if(featureNames.length == 0){
-                  addResource = false;
-                }
-              }
-            })
-          }
-
-          if(addResource){
-            category.features.forEach((feat) => {
-              const feature = {
-                featureId: feat.featureId,
-                name: feat.name,
-                description: feat.description,
-                categoryId: categoryId,
-                selected: false
-              };
-              const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
-              if(filterIncluded) feature_list.push(feature);
-
-              if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
-                categories[categoryId].features[feat.featureId] = feature;
-              }
-            })
-          }
         })
 
         if(!excludedResources.find((er) => er == r.resourceName) && addResource){
@@ -154,7 +168,8 @@ export const catalogSlice = createSlice({
             description: r.description,
             recommendedUse: r.recommendedUse,
             features: feature_list.map(f => f.name).sort((a,b) => a > b),
-            featureIds: feature_list.map(f => f.featureId)
+            featureIds: feature_list.map(f => f.featureId),
+            sortCategory
           }
           resources.push(resource);
         }
@@ -184,7 +199,11 @@ export const catalogSlice = createSlice({
       })
 
       state.filters = state.filters.sort((a,b) => a.categoryName.localeCompare(b.categoryName));
-      state.resources = resources.sort((a,b) => a.resourceName.localeCompare(b.resourceName));
+      state.resources = resources
+        .sort((a,b) => a.resourceName.localeCompare(b.resourceName))
+        .sort((a, b) =>
+          state.resourceSorting[a.sortCategory] > state.resourceSorting[b.sortCategory]
+        );
       state.filteredResources = _.cloneDeep(state.resources);
       state.resourcesLoaded = true;
 
