@@ -83,11 +83,11 @@ export const catalogSlice = createSlice({
         })
       }
 
+      // console.log(apiResources.map(r => r.resourceName).sort((a, b) => a > b));
       apiResources.forEach((r) => {
         const feature_list = [];
         let addResource = true;
         let sortCategory = "unknown";
-
         r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
           const categoryId = category.categoryId;
 
@@ -104,8 +104,8 @@ export const catalogSlice = createSlice({
             }
 
             if(allowedFeatures.length > 0){
-
               allowedFeatures.forEach((f) => {
+                if(r.resourceName == "NCSA Delta CPU (Delta CPU)") console.log(r);
                 if(f.category == category.categoryName){
                   const featureNames = category.features
                     .map((feat) => feat.name)
