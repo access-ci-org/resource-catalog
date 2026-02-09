@@ -83,96 +83,108 @@ export const catalogSlice = createSlice({
         })
       }
 
-      // console.log(apiResources.map(r => r.resourceName).sort((a, b) => a > b));
       apiResources.forEach((r) => {
         const feature_list = [];
         let addResource = true;
         let sortCategory = "unknown";
-        r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
-          const categoryId = category.categoryId;
+        const resourceCategories = r.featureCategories.map((c) => c.categoryName);
 
-          if(category.categoryName == "ACCESS Resource Grouping"){
-            sortCategory = category.features[0].name;
-          } else {
-            if(!categories[categoryId] && useFilter(allowedCategories, excludedCategories, category.categoryName) ){
-              categories[categoryId] = {
-                categoryId: categoryId,
-                categoryName: category.categoryName,
-                categoryDescription: category.categoryDescription,
-                features: {}
+        if(allowedFeatures.length > 0){
+          const hasCategory = allowedFeatures
+            .map((f) => f.category)
+            .filter((af) => resourceCategories.includes(af))
+            .length > 0;
+
+          if(!hasCategory) addResource = false;
+        }
+
+        if(addResource){
+          r.featureCategories.filter(f => f.categoryIsFilter).forEach((category) => {
+            const categoryId = category.categoryId;
+
+            if(category.categoryName == "ACCESS Resource Grouping"){
+              sortCategory = category.features[0].name;
+            } else {
+              if(!categories[categoryId] && useFilter(allowedCategories, excludedCategories, category.categoryName) ){
+                categories[categoryId] = {
+                  categoryId: categoryId,
+                  categoryName: category.categoryName,
+                  categoryDescription: category.categoryDescription,
+                  features: {}
+                }
+              }
+
+              if(allowedFeatures.length > 0){
+                allowedFeatures.forEach((f) => {
+                  if(f.category == category.categoryName){
+
+                    const featureNames = category.features
+                      .map((feat) => feat.name)
+                      .filter((name) => f.features.indexOf(name) >= 0);
+                    if(featureNames.length == 0){
+                      addResource = false;
+                    }
+                  }
+                })
+              }
+
+              if(excludedFeatures.length > 0){
+
+                excludedFeatures.forEach((f) => {
+                  if(f.category == category.categoryName){
+
+                    const featureNames = category.features
+                      .map((feat) => feat.name)
+                      .filter((name) => f.features.indexOf(name) < 0);
+
+                    if(featureNames.length == 0){
+                      addResource = false;
+                    }
+                  }
+                })
+              }
+
+              if(addResource){
+                category.features.forEach((feat) => {
+                  const feature = {
+                    featureId: feat.featureId,
+                    name: feat.name,
+                    description: feat.description,
+                    categoryId: categoryId,
+                    selected: false
+                  };
+                  const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
+                  if(filterIncluded) feature_list.push(feature);
+
+                  if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
+                    categories[categoryId].features[feat.featureId] = feature;
+                  }
+                })
               }
             }
 
-            if(allowedFeatures.length > 0){
-              allowedFeatures.forEach((f) => {
-                if(r.resourceName == "NCSA Delta CPU (Delta CPU)") console.log(r);
-                if(f.category == category.categoryName){
-                  const featureNames = category.features
-                    .map((feat) => feat.name)
-                    .filter((name) => f.features.indexOf(name) >= 0);
 
-                  if(featureNames.length == 0){
-                    addResource = false;
-                  }
-                }
-              })
+          })
+
+          if(!excludedResources.find((er) => er == r.resourceName) && addResource){
+            const resource = {
+              resourceName: r.resourceName,
+              resourceId: r.resourceId,
+              resourceType: r.resourceType,
+              organization: r.organization,
+              units: r.units,
+              userGuideUrl: r.userGuideUrl,
+              resourceDescription: r.resourceDescription,
+              description: r.description,
+              recommendedUse: r.recommendedUse,
+              features: feature_list.map(f => f.name).sort((a,b) => a > b),
+              featureIds: feature_list.map(f => f.featureId),
+              sortCategory
             }
-
-            if(excludedFeatures.length > 0){
-
-              excludedFeatures.forEach((f) => {
-                if(f.category == category.categoryName){
-
-                  const featureNames = category.features
-                    .map((feat) => feat.name)
-                    .filter((name) => f.features.indexOf(name) < 0);
-
-                  if(featureNames.length == 0){
-                    addResource = false;
-                  }
-                }
-              })
-            }
-
-            if(addResource){
-              category.features.forEach((feat) => {
-                const feature = {
-                  featureId: feat.featureId,
-                  name: feat.name,
-                  description: feat.description,
-                  categoryId: categoryId,
-                  selected: false
-                };
-                const filterIncluded = useFilter(allowedFilters, excludedFilters, feature.name)
-                if(filterIncluded) feature_list.push(feature);
-
-                if(categories[categoryId] && filterIncluded && !categories[categoryId].features[feat.featureId]) {
-                  categories[categoryId].features[feat.featureId] = feature;
-                }
-              })
-            }
+            resources.push(resource);
           }
-
-
-        })
-
-        if(!excludedResources.find((er) => er == r.resourceName) && addResource){
-          const resource = {
-            resourceName: r.resourceName,
-            resourceId: r.resourceId,
-            resourceType: r.resourceType,
-            organization: r.organization,
-            units: r.units,
-            userGuideUrl: r.userGuideUrl,
-            resourceDescription: r.resourceDescription,
-            description: r.description,
-            recommendedUse: r.recommendedUse,
-            features: feature_list.map(f => f.name).sort((a,b) => a > b),
-            featureIds: feature_list.map(f => f.featureId),
-            sortCategory
-          }
-          resources.push(resource);
         }
+
 
       })
 
