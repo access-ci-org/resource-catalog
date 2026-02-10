@@ -9,11 +9,17 @@
     <div id="resource_catalog_app"></div>
 
     <script type="module">
-      import { renderCatalog } from "/src/index.jsx";
-      // import { renderCatalog } from "https://esm.sh/@xras/resource-catalog";
+      // import { renderCatalog } from "/src/index.jsx";
+      import { renderCatalog } from "https://esm.sh/@xras/resource-catalog@0.11.0";
+      // renderCatalog({
+      //   api_url: "https://submit-nairr.xras.org/resources.json",
+      //   allowed_categories: ["AI Capabilities", "Resource Category", "Resource Type"],
+      //   allowed_features: [{ category: "NAIRR Pilot Opportunity", features: ["NAIRR Pilot Deep Partnerships"] }],
+      // });
+
       renderCatalog({
         api_url: "https://submit-nairr.xras.org/resources.json",
-        allowed_categories: ["AI Capabilities", "Resource Category", "Resource Type"],
+        allowed_categories: ["AI Capabilities", "Resource Category", "Resource Type", "Resource Status"],
         allowed_features: [{ category: "NAIRR Pilot Opportunity", features: ["NAIRR Pilot Deep Partnerships"] }],
       });
     </script>
