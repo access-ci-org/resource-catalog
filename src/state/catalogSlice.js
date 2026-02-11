@@ -94,7 +94,10 @@ export const catalogSlice = createSlice({
             .map((f) => f.category)
             .filter((af) => resourceCategories.includes(af))
 
-          if(categoryCheck.length == 0) addResource = false;
+          if(categoryCheck.length == 0){
+            console.log('category not found');
+            addResource = false;
+          }
         }
 
         if(addResource){
