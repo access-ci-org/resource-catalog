@@ -90,12 +90,11 @@ export const catalogSlice = createSlice({
         const resourceCategories = r.featureCategories.map((c) => c.categoryName);
 
         if(allowedFeatures.length > 0){
-          const hasCategory = allowedFeatures
+          const categoryCheck = allowedFeatures
             .map((f) => f.category)
             .filter((af) => resourceCategories.includes(af))
-            .length > 0;
 
-          if(!hasCategory) addResource = false;
+          if(categoryCheck.length == 0) addResource = false;
         }
 
         if(addResource){
