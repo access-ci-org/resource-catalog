@@ -210,12 +210,25 @@ export const catalogSlice = createSlice({
         return {...f, features: features};
       })
 
+      const cloudBank = resources.find((res) => res.resourceName === 'CloudBank Research');
+
       state.filters = state.filters.sort((a,b) => a.categoryName.localeCompare(b.categoryName));
       state.resources = resources
         .sort((a,b) => a.resourceName.localeCompare(b.resourceName))
         .sort((a, b) =>
           state.resourceSorting[a.sortCategory] > state.resourceSorting[b.sortCategory]
-        );
+        ).map((res) => {
+          if(cloudBank && ["Amazon Web Services", "Microsoft Azure", "Google Cloud Platform"].includes(res.resourceName)){
+            return {
+              ...cloudBank,
+              resourceName: res.resourceName,
+              displayName: res.displayName
+
+            }
+          }
+          return res;
+
+        });
       state.filteredResources = _.cloneDeep(state.resources);
       state.resourcesLoaded = true;
 
