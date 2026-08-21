@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.jsx"),
+      entry: resolve(import.meta.dirname, "src/index.jsx"),
       name: "XrasResourceCatalog",
       fileName: "xras-resource-catalog",
     },
