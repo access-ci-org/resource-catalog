@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.2](https://github.com/access-ci-org/resource-catalog/compare/v0.17.1...v0.17.2) (2026-08-21)
+
+
+### Bug Fixes
+
+* set repository URL in package.json ([6fbf753](https://github.com/access-ci-org/resource-catalog/commit/6fbf753710becc6b40c87dab543b6ff5e444daa0))
+
 ## 0.17.1 (2026-08-21)
 
 
