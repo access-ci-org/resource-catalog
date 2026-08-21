@@ -3,6 +3,10 @@
   "version": "0.17.1",
   "description": "A browser for available Resources",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/access-ci-org/resource-catalog.git"
+  },
   "type": "module",
   "files": [
     "dist"
